@@ -1,6 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QFrame, QPushButton, QTreeWidget, QTreeWidgetItem
 from PyQt5 import QtGui
+import subprocess
+from win_sett import Window1
+from win_prof import Window2
+from win_user_sets import Window3
 
 class User:
     def __init__(self, full_name, position):
@@ -26,13 +30,27 @@ class UserInformationApp(QMainWindow):
         #Иконка
         self.setWindowIcon(QtGui.QIcon("pics/logo.png"))
 
-        # Логотип
-        self.logo_label = QLabel(self.topbar)
-        self.logo_label.setGeometry(10, 10, 100, 30)
-        self.logo_label.setPixmap(QtGui.QPixmap("pics/logo.png"))
+        # # Логотип
+        # self.logo_label = QLabel(self.topbar)
+        # self.logo_label.setPixmap(QtGui.QPixmap("pics/logo.png"))
+        # self.logo_label.setGeometry(1500, 10, 100, 30)
+
+        # Строка поиска
+        self.search_edit = QLineEdit(self.topbar)
+        self.search_edit.setGeometry(120, 10, 200, 30)
+        self.search_edit.setStyleSheet("""
+               QLineEdit {
+                   background-color: #fff;
+                   color: #000;
+                   border: 1px solid #666;
+                   border-radius: 5px;
+               }
+           """)
+        self.search_edit.setPlaceholderText("Поиск...")
+        #В доработке...
 
         # Кнопки в topbar
-        self.button1 = QPushButton("Кнопка 1", self.topbar)
+        self.button1 = QPushButton("Профиль", self.topbar)
         self.button1.setGeometry(130, 10, 75, 30)
         self.button1.setStyleSheet("""
             QPushButton {
@@ -46,12 +64,12 @@ class UserInformationApp(QMainWindow):
                 color: #fff;
             }
             QPushButton:pressed {
-                background-color: #FF0000; /* Цвет при нажатии */
+                background-color: #FF4F00; /* Цвет при нажатии */
             }
         """)
         self.button1.clicked.connect(self.openWindow1)
 
-        self.button2 = QPushButton("Кнопка 2", self.topbar)
+        self.button2 = QPushButton("Настройки", self.topbar)
         self.button2.setGeometry(220, 10, 75, 30)
         self.button2.setStyleSheet("""
             QPushButton {
@@ -65,11 +83,10 @@ class UserInformationApp(QMainWindow):
                 color: #fff;
             }
             QPushButton:pressed {
-                background-color: #FF0000; /* Цвет при нажатии */
+                background-color: #FF4F00; /* Цвет при нажатии */
             }
         """)
         self.button2.clicked.connect(self.openWindow2)
-
 
         # Создаем виджеты
         self.menu_tree1 = QTreeWidget(self)
@@ -88,9 +105,10 @@ class UserInformationApp(QMainWindow):
             QTreeWidget::item:selected {
                 background-color: #555;
             }
-            QTreeWidget::header {
-                background-color: #000;
-                color: #fff;
+            QHeaderView::section { 
+            color: #ff400;
+            background-color: #444;
+            border: none;
             }
             """
         )
@@ -112,9 +130,10 @@ class UserInformationApp(QMainWindow):
             QTreeWidget::item:selected {
                 background-color: #555;
             }
-            QTreeWidget::header {
-                background-color: #000;
-                color: #fff;
+            QHeaderView::section { 
+            color: #ff400;
+            background-color: #444;
+            border: none;
             }
             """
         )
@@ -136,9 +155,10 @@ class UserInformationApp(QMainWindow):
             QTreeWidget::item:selected {
                 background-color: #555;
             }
-            QTreeWidget::header {
-                background-color: #000;
-                color: #fff;
+            QHeaderView::section { 
+            color: #ff400;
+            background-color: #444;
+            border: none;
             }
             """
         )
@@ -160,9 +180,10 @@ class UserInformationApp(QMainWindow):
             QTreeWidget::item:selected {
                 background-color: #555;
             }
-            QTreeWidget::header {
-                background-color: #000;
-                color: #fff;
+            QHeaderView::section { 
+            color: #ff400;
+            background-color: #444;
+            border: none;
             }
             """
         )
@@ -215,7 +236,6 @@ class UserInformationApp(QMainWindow):
 
         # Адаптируем размеры topbar
         self.topbar.setGeometry(0, 0, window_width, 50)
-        self.logo_label.setGeometry(10, 10, 100, 30)
         self.button1.setGeometry(window_width - 200, 10, 75, 30)
         self.button2.setGeometry(window_width - 100, 10, 75, 30)
 
@@ -279,45 +299,107 @@ class UserInformationApp(QMainWindow):
 
                     # Добавляем кнопку "включить режим киоска"
                     self.kiosk_button = QPushButton("Включить режим киоска", self.user_info_display)
-                    self.kiosk_button.setStyleSheet("background-color: #FFA500; color: #fff; border: none; border-radius: 5px; padding: 5px;")
+                    self.kiosk_button.setStyleSheet("""
+                                                    QPushButton {
+                                                    background-color: #FFA500; 
+                                                    color: #fff; 
+                                                    border: none; 
+                                                    border-radius: 5px; 
+                                                    padding: 5px;}
+                                                    QPushButton:hover {
+                                                    background-color: #B87E14; /* Цвет при наведении */
+                                                    color: #fff;}
+                                                    """
+                                                    )
                     self.user_info_layout.addWidget(self.kiosk_button)
                     self.kiosk_button.clicked.connect(self.toggleKioskMode)
                     self.kiosk_button.installEventFilter(self)
-                    break
 
-    def eventFilter(self, obj, event):
-        if obj == self.kiosk_button and event.type() == event.Enter:
-            self.kiosk_button.setStyleSheet("background-color: #666; color: #fff; border: none; border-radius: 5px; padding: 5px;")
-        elif obj == self.kiosk_button and event.type() == event.Leave:
-            self.kiosk_button.setStyleSheet("background-color: #FFA500; color: #fff; border: none; border-radius: 5px; padding: 5px;")
-        return super().eventFilter(obj, event)
+                    # Создаем маленькую круглую кнопку справа от кнопки "включить режим киоска"
+                    small_round_button = QPushButton("Настройки пользователя", self.user_info_display)
+                    small_round_button.setStyleSheet("""
+                        QPushButton {
+                            background-color: #FFA500; 
+                            color: #fff; 
+                            border: none; 
+                            border-radius: 5px; 
+                            padding: 5px;
+                            min-width: 30px;
+                            min-height: 30px;
+                        }
+                        QPushButton:hover {
+                            background-color: #B87E14; /* Цвет при наведении */
+                            color: #fff;
+                        }
+                    """)
+                    self.user_info_layout.addWidget(small_round_button)
+                    small_round_button.clicked.connect(self.openWindow3)
 
     def toggleKioskMode(self):
         if self.kiosk_button.text() == "Включить режим киоска":
             self.kiosk_button.setText("Выключить режим киоска")
-            self.kiosk_button.setStyleSheet("background-color: #FF0000; color: #fff; border: none; border-radius: 5px; padding: 5px;")
-            # Добавьте здесь код для включения режима киоска
-            print("Режим киоска включен")
+            self.kiosk_button.setStyleSheet("""
+                                                    QPushButton {
+                                                    background-color: #F40000; 
+                                                    color: #fff; 
+                                                    border: none; 
+                                                    border-radius: 5px; 
+                                                    padding: 5px;}
+                                                    QPushButton:hover {
+                                                    background-color: #B81414; /* Цвет при наведении */
+                                                    color: #fff;}
+                                                    """)
+
+            # command = "kiosk-mode-on"
+            #
+            # # Выполнение команды
+            # process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            #
+            # # Получение вывода и ошибок (если есть)
+            # output, error = process.communicate()
+            # if output:
+            #     print("Output:", output.decode())
+            # if error:
+            #     print("Error:", error.decode())
+            # print("Режим киоска включен")
         else:
             self.kiosk_button.setText("Включить режим киоска")
-            self.kiosk_button.setStyleSheet("background-color: #FFA500; color: #fff; border: none; border-radius: 5px; padding: 5px;")
-            # Добавьте здесь код для выключения режима киоска
-            print("Режим киоска выключен")
+            self.kiosk_button.setStyleSheet("""
+                                                    QPushButton {
+                                                    background-color: #FFA500; 
+                                                    color: #fff; 
+                                                    border: none; 
+                                                    border-radius: 5px; 
+                                                    padding: 5px;}
+                                                    QPushButton:hover {
+                                                    background-color: #B87E14; /* Цвет при наведении */
+                                                    color: #fff;}
+                                                    """)
+            # # Добавьте здесь код для выключения режима киоска
+            # command = "kiosk-mode-off"
+            #
+            # # Выполнение команды
+            # process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            #
+            # # Получение вывода и ошибок (если есть)
+            # output, error = process.communicate()
+            # if output:
+            #     print("Output:", output.decode())
+            # if error:
+            #     print("Error:", error.decode())
+            # print("Режим киоска выключен")
 
     def openWindow1(self):
-        self.new_window = NewWindow("Профиль")
+        self.new_window = Window2("Профиль")
         self.new_window.show()
 
     def openWindow2(self):
-        self.new_window = NewWindow("Настройки")
+        self.new_window = Window1("Настройки")
         self.new_window.show()
 
-class NewWindow(QMainWindow):
-    def __init__(self, window_title):
-        super().__init__()
-        self.setWindowTitle(window_title)
-        self.setGeometry(200, 200, 400, 300)
-        self.setStyleSheet("background-color: #fff;")
+    def openWindow3(self):
+        self.new_window = Window3("Настройки пользователя")
+        self.new_window.show()
 
 def main():
     app = QApplication(sys.argv)
